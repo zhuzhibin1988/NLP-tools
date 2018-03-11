@@ -12,11 +12,12 @@ NLP-tools
 --
 corpus文件下放入语料集，语料格式：人民网/nz 1月4日/t 讯/ng 据/p [法国/nsf 国际/n。
 
-执行python train.py 开始训练。
+执行python train.py 开始训练（分词与Pos训练只需调整输出数据类型，seg_training_data.pkl或是pos_training_data.pkl既可）。
 
-生成word2id字典存入data/data.pkl。
+生成word2id字典存入data/seg_trining_data.pkl。(data/pos_trining_data.pkl。)
 
-训练生成checkpoint存入ckpt。
+训练生成checkpoint存入ckpt/seg/。(ckpt/pos/)
+
 
 模型超参数
 --
@@ -28,7 +29,7 @@ corpus文件下放入语料集，语料格式：人民网/nz 1月4日/t 讯/ng �
 
 * 隐藏层节点数：256
 
-* 最大迭代次数：9
+* 最大迭代次数：9 (POS训练只需到6次迭代acc达到99%)
 
 * Batch宽度：128
 
@@ -36,13 +37,15 @@ corpus文件下放入语料集，语料格式：人民网/nz 1月4日/t 讯/ng �
     
 模型测试
 --
-将待分词项写入test/test.txt文件中，执行python model_test.py，生成结果存入test/test_result.txt。
+将待分词项写入test/test.txt文件中，执行python seg_model_test.py，生成结果存入test/seg_result.txt。
+执行 python pos_model_test.py，生成结果存入test/pos_result.txt。
 
 现状
 --
-目前模型尚处于初步测试成功，分词部分完成，正确率94%（有待提高）。
+目前模型尚处于初步测试成功，分词部分完成，正确率94%。
+                            词性标注训练完成，正确率99%，代码尚需整理。
 
-后期陆续整理出POS\NER以及Parse功能。 
+后期陆续整理出NER以及Parse功能。 
 
 参考
 --
