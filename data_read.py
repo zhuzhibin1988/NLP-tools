@@ -13,7 +13,7 @@ from sentence import TagSurfix
 '''
 
 class DataHandler(object):
-    def __init__(self, rootDir='raw_data', save_path='data/data.pkl'):
+    def __init__(self, rootDir='raw_data', save_path='data/Seg_data.pkl'):
         self.rootDir = rootDir
         self.save_path = save_path
         self.spiltChar = ['。', '!', '！', '？', '?']
@@ -32,9 +32,11 @@ class DataHandler(object):
                 self.X = pickle.load(inp)
                 self.y = pickle.load(inp)
                 self.word2id = pickle.load(inp)
-                self.id2word = pickle.load(inp)
+                if self.save_path == 'data/data.pkl':
+                    self.id2word = pickle.load(inp)
                 self.tag2id = pickle.load(inp)
-                self.id2tag = pickle.load(inp)
+                if self.save_path == 'data/data.pkl':
+                    self.id2tag = pickle.load(inp)
         else:
             self.loadRawData()
             self.handlerRawData()
@@ -283,7 +285,7 @@ class BatchGenerator(object):
 
 
 if __name__ == '__main__':
-    data = DataHandler(rootDir='corpus\\2014', save_path='data\\data.pkl')
+    data = DataHandler(rootDir='corpus\\2014', save_path='data\\Seg_data.pkl')
     data.loadData()
 
     data.builderTrainData()
