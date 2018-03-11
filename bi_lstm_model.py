@@ -11,7 +11,7 @@ from tensorflow.contrib import crf
 
 
 class BiLSTMModel(object):
-    def __init__(self, max_len=200, vocab_size=5159, class_num=5, model_save_path='./ckpt/bi-lstm.ckpt'):
+    def __init__(self, max_len=200, vocab_size=5159, class_num=148, model_save_path='./ckpt/pos.ckpt'):
         # config
         self.timestep_size = self.max_len = max_len  # 单个输入的句子长度;也即一次完整的样本输入的大小
         self.vocab_size = vocab_size  # 样本中不同字的个数+1(padding 0)，根据处理数据的时候得到
