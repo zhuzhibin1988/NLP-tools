@@ -95,7 +95,7 @@ class BiLSTMTrain(object):
                 y_ = y_[:sequence_length_]
                 viterbi_sequence, _ = crf.viterbi_decode(
                     tf_unary_scores_, transition_params)
-                # Evaluate word-level accuracy.
+                # 分类正确率统计
                 correct_labels += np.sum(np.equal(viterbi_sequence, y_))
                 total_labels += sequence_length_
 
