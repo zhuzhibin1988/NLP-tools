@@ -149,7 +149,8 @@ class DataHandler(object):
                     tags.append(memberPre.value + memberSuf.value)
                 elif memberSuf != TagSurfix.S:
                     tags.append(memberPre.value + memberSuf.value)
-
+        
+        tags = list(set(tags)
         print(tags)
 
         tag_ids = range(len(tags))
