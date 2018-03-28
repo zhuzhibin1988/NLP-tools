@@ -47,6 +47,9 @@ class BiLSTMTest(object):
             
 
             tags = list(self.data.id2tag[tags])
+            if tags[0] = TagSurfix.S.value and not tags[0].endswith(TagSurfix.B.value):
+                tags[0] = TagSurfix.S.value    #强制转换
+            
             words = []
             for i in range(len(text)):  # 按照标签分割开
                 if tags[i] == TagSurfix.S.value or tags[i].endswith(TagSurfix.B.value):
