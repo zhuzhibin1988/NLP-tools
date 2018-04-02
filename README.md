@@ -10,7 +10,7 @@ NLP-tools
 
 模型训练
 --
-corpus文件下放入语料集，语料格式：人民网/nz 1月4日/t 讯/ng 据/p [法国/nsf 国际/n。
+corpus文件下放入语料集（该语料集未上传至github，只有部分样例，可通过互联网找到。若找不到可email me），语料格式：人民网/nz 1月4日/t 讯/ng 据/p [法国/nsf 国际/n。
 
 执行python train.py 开始训练（分词与Pos训练只需调整输出数据类型，seg_training_data.pkl或是pos_training_data.pkl既可）。
 
