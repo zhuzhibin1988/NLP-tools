@@ -133,46 +133,60 @@ class BiLSTMTest(object):
                 with open(self.test_file, "r", encoding='utf-8') as fp:
                     for line in fp.readlines():
                         line = line.encode('utf-8').decode('utf-8-sig')
+                        if len(line.strip()) > 1: # 阻断空白文档
                        # 分句方式 1 
                        # line = line.strip('"')
                        # line = line.replace('"','“').replace('"','”').replace(' ','')
                        # result = self.cut_word(line.strip())
                        #
                        # 分句方式 2 
-                        result = self.cut_sentence(line, self.data.max_len)
-                        
-                        rss = ''
-                        DAT = ''
-                        LOC = ''
-                        PEO = []
+                            result = self.cut_sentence(line, self.data.max_len)
+                            
 
-                        for each in result: 
-                            if isinstance(each, list):     
-                                # rss = rss +each[0] + '/' # no NER
-                                rss = rss + each[0] + ' /' + each[1] + ' ' # NER
+                            rss = ''
+                            DAT = []
+                            LOC = []
+                            PEO = []
 
-                                if each[1] == 'DAT':
-                                    DAT = DAT + each[0]
-                                elif each[1] == 'LOC':
-                                    LOC = LOC + each[0]
-                                elif each[1] == 'PEO':
-                                    PEO.append(each[0])
+                            for each in result: 
+                                if isinstance(each, list):     
+                                    # rss = rss +each[0] + '/' # no NER
+                                    rss = rss + each[0] + ' /' + each[1] + ' ' # NER
 
-                            else:
-                                rss = rss + each + '/'
-                        
-                        # 人名去重
-                        PEO = list(set(PEO))
-                        PE0 = ''
-                        for i in PEO:
-                            PE0 = PE0 + i + ' '
+                                    if each[1] == 'DAT':
+                                        DAT.append(each[0])
+                                    elif each[1] == 'LOC':
+                                        LOC.append(each[0])
+                                    elif each[1] == 'PEO':
+                                        PEO.append(each[0])
 
-                        print('DATE:',DAT)
-                        print('LOCTION:',LOC) 
-                        print('PEOPLE:',PE0)
-                        print(' ')
-                        #print(rss)
-                        #out.write("%s\n" % (rss))
+                                else:
+                                    rss = rss + each + '/'
+                            
+                            # 去重
+                            PEO = list(set(PEO))
+                            PE0 = ''
+                            for i in PEO:
+                                PE0 = PE0 + i + ' '
+
+                            DAT = DAT
+                            DAt = ''
+                            for i in DAT:
+                                if i != '。':
+                                    DAt = DAt + i + ' '
+
+                            LOC_ = list(set(LOC))
+                            LOC_.sort(key = LOC.index)
+                            L0C = ''
+                            for i in LOC_:
+                                L0C = L0C + i + ' '
+
+                            print('DATE:',DAt)
+                            print('LOCTION:',L0C) 
+                            print('PEOPLE:',PE0)
+                            print(' ')
+                            #print(rss)
+                            #out.write("%s\n" % (rss))
 
     def loadModel(self, sess=None):
         isload = False
