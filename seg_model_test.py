@@ -3,15 +3,21 @@ import re
 import os
 import numpy as np
 import tensorflow as tf
-import data_read as readData
+import data_preprocess as readData
 import bi_lstm_model as modelDef
 from sentence import TagSurfix
 from tensorflow.contrib import crf
 
+tf.app.flags.DEFINE_string('dict_path', 'data/data_ner_0409.pkl', 'dict path')
+tf.app.flags.DEFINE_string('model_path', 'ckpt/ner0409', 'model path')
+tf.app.flags.DEFINE_string('test_file', 'test/jyaq.csv', 'test file path')
+tf.app.flags.DEFINE_string('test_result', 'test/ner_result.ext', 'test result path')
+
+FLAGS = tf.app.flags.FLAGS
 
 class BiLSTMTest(object):
-    def __init__(self, data=None, model_path='ckpt/ner0327',
-                 test_file='test/jyaq.csv', test_result='test/seg_result.txt'):
+    def __init__(self, data=None, model_path=FLAGS.model_path,
+                 test_file=FLAGS.test_file, test_result=FLAGS.test_result):
         self.data = data
         self.model_path = model_path
         self.test_file = test_file
@@ -199,12 +205,15 @@ class BiLSTMTest(object):
             isload = True
         return isload
 
-if __name__ == '__main__':
-
-    data = readData.DataHandler(save_path = 'data/data_ner_0327.pkl')
+def main(_):
+    data = readData.DataHandler(save_path = FLAGS.dict_path)
     data.loadData()
     print(u'加载字典完成！\n')
     test = BiLSTMTest(data)
 
     if test.isload:
         test.testfile()
+
+if __name__ == '__main__':
+    tf.app.run()
+    
