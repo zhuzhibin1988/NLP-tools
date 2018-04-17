@@ -38,8 +38,11 @@ corpus文件下放入语料集（该语料集未上传至github，只有部分�
 模型测试
 --
 $ python seg_model_test.py [-h] [--dict_path DICT_PATH]
+
                            [--model_path MODEL_PATH] [--test_file TEST_FILE]
+                           
                            [--test_result TEST_RESULT]
+
 执行 python pos_model_test.py，生成结果存入test/pos_result.txt。
 
 现状
