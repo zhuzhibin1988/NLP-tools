@@ -13,10 +13,7 @@ NLP-tools
 版本预告
 --
 下期更新
-1、HTTP接口
-2、tf.app.flags功能
-3、分布式训练
-4、基于不同领域NLP实现的数据增强
+1、各种语料集预处理.py
 
 模型训练
 --
@@ -68,6 +65,17 @@ NLP-tools
          [--test_file TEST_FILE] [--test_result TEST_RESULT]
 
 注 DICT_PATH、MODEL_PATH 选择预处理数据文件和相应模型文件。TEST_FILE 待测试文件目录，TEST_RESULT 预测结果保持目录。
+
+HTTP接口
+--
+一个简单的web server
+
+     $ python web_server.py
+     [-h] [--dict_path DICT_PATH] [--model_path MODEL_PATH]
+
+选择预处理数据文件 和 模型文件。执行python，默认本机测试代码：
+
+     $ curl -i -H "Content-Type: application/json" -X POST -d '{"text":"\u5f20\u51cc\u745e\u3002"}' http://localhost:5000/ner_text
 
 现状
 --
