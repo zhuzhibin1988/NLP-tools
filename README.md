@@ -20,20 +20,31 @@ NLP-tools
 
 模型训练
 --
-corpus文件下放入语料集（该语料集未上传至github，只有部分样例，可通过互联网找到。若找不到可email me），语料格式：人民网/nz 1月4日/t 讯/ng 据/p [法国/nsf 国际/n。
+语料放到CORPUS_PATH下（该语料集未上传至github，只有部分样例，可通过互联网找到。若找不到可email me），语料格式：人民网/nz 1月4日/t 讯/ng 据/p [法国/nsf 国际/n。
 
-执行python train.py 开始训练（分词与Pos训练只需调整输出数据类型，seg_training_data.pkl或是pos_training_data.pkl既可）。
+     分词预处理：
+     $ python
+     词性标注预处理：
+     $ python
+     实体命名预处理：
+     $ python 
 
-生成word2id字典存入data/seg_trining_data.pkl。(data/pos_trining_data.pkl。)
 
-训练生成checkpoint存入ckpt/seg/。(ckpt/pos/)
+生成word2id字典存入DICT_PATH。
+
+     $ python train.py 
+     [-h] [--corpus_path CORPUS_PATH] [--dict_path DICT_PATH]
+          [--ckpt_path CKPT_PATH] [--embed_size EMBED_SIZE]
+          [--layer_num LAYER_NUM] [--hidden_size HIDDEN_SIZE]
+          [--batch_size BATCH_SIZE] [--epoch EPOCH] [--lr LR]
+
+训练生成checkpoint存入CKPT_PATH。
 
 
-模型超参数
+模型默认超参数
 --
-* 分词标记方式：4tags 
 
-* 嵌入层向量长度：100
+* 嵌入层向量长度：300
 
 * BiLstm层数：2
 
@@ -43,22 +54,26 @@ corpus文件下放入语料集（该语料集未上传至github，只有部分�
 
 * Batch宽度：128
 
-* 初始学习率：1e-3（采用动态形式，随训练进行而减小步长）
+* 初始学习率：1e-4（采用动态形式，随训练进行而减小步长）
     
 模型测试
 --
 
-    $ python seg_model_test.py 
-           [-h] [--dict_path DICT_PATH]
-                [--model_path MODEL_PATH] [--test_file TEST_FILE]
-                [--test_result TEST_RESULT]
+    $ python seg_model_test.py # 分词
+    [-h] [--dict_path DICT_PATH] [--model_path MODEL_PATH] 
+         [--test_file TEST_FILE] [--test_result TEST_RESULT]
 
-执行 python pos_model_test.py，生成结果存入test/pos_result.txt。
+    $ python pos_model_test.py # 词性标注 
+    [-h] [--dict_path DICT_PATH] [--model_path MODEL_PATH] 
+         [--test_file TEST_FILE] [--test_result TEST_RESULT]
+
+注 DICT_PATH、MODEL_PATH 选择预处理数据文件和相应模型文件。TEST_FILE 待测试文件目录，TEST_RESULT 预测结果保持目录。
 
 现状
 --
 目前模型尚处于初步测试成功，分词部分完成，正确率97%。
-                            词性标注训练完成，正确率99%，代码尚需整理。
+                            
+词性标注训练完成，正确率99%，代码尚需整理。
 
 后期陆续整理出NER以及Parse功能。 
 
