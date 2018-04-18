@@ -10,10 +10,14 @@ NLP-tools
 
 欢迎各位大佬吐槽。
 
-版本预告
+说明
 --
-下期更新
+下期更新：
 1、各种语料集预处理.py
+
+环境配置：创建新的conda环境
+
+     $ conda env create -f environment.yaml
 
 模型训练
 --
