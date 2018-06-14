@@ -24,11 +24,11 @@ NLP-tools
 语料放到CORPUS_PATH下（该语料集未上传至github，只有部分样例，可通过互联网找到。若找不到可email me），语料格式：人民网/nz 1月4日/t 讯/ng 据/p [法国/nsf 国际/n。
 
      分词预处理：
-     $ python
+     $ python data_read_seg_RMRB.py #人民日报
      词性标注预处理：
-     $ python
+     $ python data_read_pos_RMRB.py
      实体命名预处理：
-     $ python 
+     $ python data_preprocess.py # 实体命名代码与分词基本类似，只是再4Tags的基础上加了实体标签。可在sentence.py中查看。
 
 
 生成word2id字典存入DICT_PATH。
