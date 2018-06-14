@@ -1,13 +1,25 @@
 #encoding=utf8
+from tensorflow.contrib import crf
 import time
 import tensorflow as tf
-from tensorflow.contrib import crf
-import data_read as readData
+import data_preprocess as readData
 import bi_lstm_model as modelDef
 import numpy as np
+import os 
 
-# 增加一个参数，--使分别
-# 训练seg、NER、parse(seq2seq)
+os.environ['CUDA_VISIBLE_DEVICES']='0' # 只占用第一块GPU
+
+tf.app.flags.DEFINE_string('corpus_path', './corpus/2014', 'corpus path')
+tf.app.flags.DEFINE_string('dict_path', 'data/data_ner_0409.pkl', 'dict path')
+tf.app.flags.DEFINE_string('ckpt_path', 'ckpt/ner0409/model.ckpt', 'checkpoint path')
+tf.app.flags.DEFINE_integer('embed_size', 300, 'embedding size')
+tf.app.flags.DEFINE_integer('layer_num', 2, 'hidden layer number')
+tf.app.flags.DEFINE_integer('hidden_size', 256, 'hidden layer node number')
+tf.app.flags.DEFINE_integer('batch_size', 128, 'batch size')
+tf.app.flags.DEFINE_integer('epoch', 128, 'training epoch')
+tf.app.flags.DEFINE_float('lr', 1e-4, 'learning rate')
+
+FLAGS = tf.app.flags.FLAGS
 
 class BiLSTMTrain(object):
     def __init__(self, data_train=None, data_valid=None, data_test=None,
@@ -26,14 +38,14 @@ class BiLSTMTrain(object):
         sess.run(tf.global_variables_initializer())
         decay = 0.85
         max_epoch = 5
-        tr_batch_size = 128
-        max_max_epoch = 9  # 最大训练的epoch量
+        tr_batch_size = FLAGS.batch_size
+        max_max_epoch = FLAGS.epoch  # 最大训练的epoch量
         display_num = 5  # 每个 epoch 显示是个结果
         tr_batch_num = int(self.data_train.y.shape[0] / tr_batch_size)  # 每个 epoch 中包含的 batch 数
         display_batch = int(tr_batch_num / display_num)  # 每训练 display_batch 之后输出一次
         saver = tf.train.Saver(max_to_keep=10)  # 最多保存的模型数量
         for epoch in range(max_max_epoch):  # 整个数据集循环批次
-            _lr = 1e-4
+            _lr = FLAGS.lr
             if epoch > max_epoch:
                 _lr = _lr * ((decay) ** (epoch - max_epoch))
             print('EPOCH %d， lr=%g' % (epoch + 1, _lr))
@@ -103,17 +115,19 @@ class BiLSTMTrain(object):
         accuracy = correct_labels / float(total_labels)
         return accuracy
 
-
-if __name__ == '__main__':
-    data = readData.DataHandler(rootDir='\\corpus\\2014')
+def main(_):
+    data = readData.DataHandler(rootDir=FLAGS.corpus_path, save_path=FLAGS.dict_path)
     print('语料加载完成！')
     data.loadData()
-    data_train, data_valid, data_test = data.builderTrainData()  # 拆分开训练集、验证集、测试集
+    data_train, data_valid, data_test = data.builderTrainData() 
     print('训练集、验证集、测试集拆分完成！')
 
-    model = modelDef.BiLSTMModel(max_len=data.max_len, vocab_size=data.word2id.__len__(), class_num= data.tag2id.__len__())
+    model = modelDef.BiLSTMModel(max_len=data.max_len, vocab_size=data.word2id.__len__(), class_num= data.tag2id.__len__(), model_save_path=FLAGS.ckpt_path, embed_size=FLAGS.embed_size, ln=FLAGS.layer_num, hs=FLAGS.hidden_size)
     print('模型定义完成！')
 
     train = BiLSTMTrain(data_train, data_valid, data_test, model)
     train.train()
     print('模型训练完成！')
+
+if __name__ == '__main__':
+    tf.app.run()

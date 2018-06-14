@@ -11,7 +11,7 @@ from tensorflow.contrib import crf
 tf.app.flags.DEFINE_string('dict_path', 'data/data_ner_0409.pkl', 'dict path')
 tf.app.flags.DEFINE_string('model_path', 'ckpt/ner0409', 'model path')
 tf.app.flags.DEFINE_string('test_file', 'test/jyaq.csv', 'test file path')
-tf.app.flags.DEFINE_string('test_result', 'test/ner_result.ext', 'test result path')
+tf.app.flags.DEFINE_string('test_result', 'test/ner_result.txt', 'test result path')
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -192,13 +192,13 @@ class BiLSTMTest(object):
                             print('PEOPLE:',PE0)
                             print(' ')
                             #print(rss)
-                            #out.write("%s\n" % (rss))
+                            out.write("%s\n" % (rss))
 
     def loadModel(self, sess=None):
         isload = False
         self.model = modelDef.BiLSTMModel(vocab_size=self.data.word2id.__len__(), class_num=self.data.tag2id.__len__())
         ckpt = tf.train.latest_checkpoint(self.model_path)
-        print(u'加载模型checkpoint完成，路径为：'+ckpt+'\n')
+        print(u'\n 加载模型checkpoint完成，路径为：'+self.model_path+' ...\n')
         saver = tf.train.Saver()
         if ckpt:
             saver.restore(sess, ckpt)
@@ -208,7 +208,7 @@ class BiLSTMTest(object):
 def main(_):
     data = readData.DataHandler(save_path = FLAGS.dict_path)
     data.loadData()
-    print(u'加载字典完成！\n')
+    print(u'\n 加载字典完成，路径为：'+FLAGS.dict_path+' ...\n')
     test = BiLSTMTest(data)
 
     if test.isload:
