@@ -1,65 +1,67 @@
 #encoding=utf8
-from tensorflow.contrib import crf
 import time
-import tensorflow as tf
-import data_preprocess as readData
-import bi_lstm_model as modelDef
 import numpy as np
-import os 
+import tensorflow as tf
+from tensorflow.contrib import crf
 
-os.environ['CUDA_VISIBLE_DEVICES']='0' # 只占用第一块GPU
+import cws.model as modelDef
+from cws.data import Data
 
-tf.app.flags.DEFINE_string('corpus_path', './corpus/2014', 'corpus path')
-tf.app.flags.DEFINE_string('dict_path', 'data/data_ner_0409.pkl', 'dict path')
-tf.app.flags.DEFINE_string('ckpt_path', 'ckpt/ner0409/model.ckpt', 'checkpoint path')
-tf.app.flags.DEFINE_integer('embed_size', 300, 'embedding size')
-tf.app.flags.DEFINE_integer('layer_num', 2, 'hidden layer number')
-tf.app.flags.DEFINE_integer('hidden_size', 256, 'hidden layer node number')
+
+tf.app.flags.DEFINE_string('dict_path', '.data/your_dict.pkl', 'dict path')
+tf.app.flags.DEFINE_string('train_data', '.data/your_train_data.pkl', 'train data path')
+tf.app.flags.DEFINE_string('ckpt_path', 'checkpoint/cws.finetune.ckpt/', 'checkpoint path')
+tf.app.flags.DEFINE_integer('embed_size', 256, 'embedding size')
+tf.app.flags.DEFINE_integer('hidden_size', 512, 'hidden layer node number')
 tf.app.flags.DEFINE_integer('batch_size', 128, 'batch size')
-tf.app.flags.DEFINE_integer('epoch', 128, 'training epoch')
-tf.app.flags.DEFINE_float('lr', 1e-4, 'learning rate')
+tf.app.flags.DEFINE_integer('epoch', 9, 'training epoch')
+tf.app.flags.DEFINE_float('lr', 0.001, 'learning rate')
+tf.app.flags.DEFINE_string('save_path','checkpoint/cws.ckpt/','new model save path')
 
 FLAGS = tf.app.flags.FLAGS
 
 class BiLSTMTrain(object):
-    def __init__(self, data_train=None, data_valid=None, data_test=None,
-                 model=None):
+    def __init__(self, data_train=None, data_valid=None, data_test=None, model=None):
         self.data_train = data_train
         self.data_valid = data_valid
         self.data_test = data_test
         self.model = model
 
     def train(self):
-        # 设置 GPU 按需增长
+       
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
-        # 进行实际的训练
         sess.run(tf.global_variables_initializer())
-        decay = 0.85
+       ## finetune ##
+       # ckpt = tf.train.latest_checkpoint(FLAGS.ckpt_path)
+       # saver = tf.train.Saver()
+       # saver.restore(sess, ckpt)
+       # print('-->finetune the ckeckpoint:'+ckpt+'...')
+       ##############
         max_epoch = 5
         tr_batch_size = FLAGS.batch_size
-        max_max_epoch = FLAGS.epoch  # 最大训练的epoch量
-        display_num = 5  # 每个 epoch 显示是个结果
-        tr_batch_num = int(self.data_train.y.shape[0] / tr_batch_size)  # 每个 epoch 中包含的 batch 数
-        display_batch = int(tr_batch_num / display_num)  # 每训练 display_batch 之后输出一次
-        saver = tf.train.Saver(max_to_keep=10)  # 最多保存的模型数量
-        for epoch in range(max_max_epoch):  # 整个数据集循环批次
+        max_max_epoch = FLAGS.epoch  # Max epoch
+        display_num = 5  # Display 5 pre epoch
+        tr_batch_num = int(self.data_train.y.shape[0] / tr_batch_size)  
+        display_batch = int(tr_batch_num / display_num)  
+        saver = tf.train.Saver(max_to_keep=10)  
+        for epoch in range(max_max_epoch): 
             _lr = FLAGS.lr
             if epoch > max_epoch:
-                _lr = _lr * ((decay) ** (epoch - max_epoch))
+                _lr = 0.0002
             print('EPOCH %d， lr=%g' % (epoch + 1, _lr))
             start_time = time.time()
             _losstotal = 0.0
             show_loss = 0.0
-            for batch in range(tr_batch_num):  # 一个大批次训练下面的小批次
+            for batch in range(tr_batch_num):  
                 fetches = [self.model.loss, self.model.train_op]
                 X_batch, y_batch = self.data_train.next_batch(tr_batch_size)
 
                 feed_dict = {self.model.X_inputs: X_batch, self.model.y_inputs: y_batch, self.model.lr: _lr,
                              self.model.batch_size: tr_batch_size,
                              self.model.keep_prob: 0.5}
-                _loss, _ = sess.run(fetches, feed_dict)  # 每批次平均损失
+                _loss, _ = sess.run(fetches, feed_dict)  
                 _losstotal += _loss
                 show_loss += _loss
                 if (batch + 1) % display_batch == 0:
@@ -68,11 +70,9 @@ class BiLSTMTrain(object):
                                                                              valid_acc))
                     show_loss = 0.0
             mean_loss = _losstotal / tr_batch_num
-            if (epoch + 1) % 3 == 0:  # 每 3 个 epoch 保存一次模型
-                save_path = saver.save(sess, self.model.model_save_path, global_step=(epoch + 1))
+            if (epoch + 1) % 1 == 0:  # Save once per epoch
+                save_path = saver.save(sess, self.model.model_save_path+'_plus', global_step=(epoch + 1))
                 print('the save path is ', save_path)
-                print('词向量为：')
-                print(sess.run(self.model.embedding))
             print('\ttraining %d, loss=%g ' % (self.data_train.y.shape[0], mean_loss))
             print('Epoch training %d, loss=%g, speed=%g s/epoch' % (
                 self.data_train.y.shape[0], mean_loss, time.time() - start_time))
@@ -88,7 +88,7 @@ class BiLSTMTrain(object):
         _batch_size = 500
         _y = dataset.y
         data_size = _y.shape[0]
-        batch_num = int(data_size / _batch_size)  # 循环批次
+        batch_num = int(data_size / _batch_size)  
         correct_labels = 0
         total_labels = 0
         fetches = [self.model.scores, self.model.length, self.model.transition_params]
@@ -107,7 +107,7 @@ class BiLSTMTrain(object):
                 y_ = y_[:sequence_length_]
                 viterbi_sequence, _ = crf.viterbi_decode(
                     tf_unary_scores_, transition_params)
-                # 分类正确率统计
+                
                 correct_labels += np.sum(np.equal(viterbi_sequence, y_))
                 total_labels += sequence_length_
 
@@ -116,18 +116,21 @@ class BiLSTMTrain(object):
         return accuracy
 
 def main(_):
-    data = readData.DataHandler(rootDir=FLAGS.corpus_path, save_path=FLAGS.dict_path)
-    print('语料加载完成！')
-    data.loadData()
-    data_train, data_valid, data_test = data.builderTrainData() 
-    print('训练集、验证集、测试集拆分完成！')
-
-    model = modelDef.BiLSTMModel(max_len=data.max_len, vocab_size=data.word2id.__len__(), class_num= data.tag2id.__len__(), model_save_path=FLAGS.ckpt_path, embed_size=FLAGS.embed_size, ln=FLAGS.layer_num, hs=FLAGS.hidden_size)
-    print('模型定义完成！')
-
+    dictData = Data(path=FLAGS.dict_path)
+    trainData = Data.TrainData(path=FLAGS.train_data)
+    print('Corpus loading completed:',FLAGS.train_data)
+    data_train, data_valid, data_test = trainData.builderTrainData() 
+    print('The training set, verification set, and test set split are completed!')
+    model = modelDef.BiLSTMModel(max_len=dictData.max_len, 
+                                 vocab_size=dictData.word2id.__len__()+1, 
+                                 class_num= dictData.tag2id.__len__(), 
+                                 model_save_path=FLAGS.save_path, 
+                                 embed_size=FLAGS.embed_size,  
+                                 hs=FLAGS.hidden_size)
+    print('Model definition completed!')
     train = BiLSTMTrain(data_train, data_valid, data_test, model)
     train.train()
-    print('模型训练完成！')
+    print('Model training completed!')
 
 if __name__ == '__main__':
     tf.app.run()
