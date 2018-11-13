@@ -105,7 +105,7 @@ class BiLSTMSegmenter(object):
         with self.sess1.as_default():
             with self.sess1.graph.as_default():
                 cws_result = self.cut_word(text)
-                print('--label--:', cws_result)
+                # print('--label--:', cws_result)
                 rss = self.output(text, cws_result)
-                print('--result--:', rss)
+                # print('--result--:', rss)
                 return rss
