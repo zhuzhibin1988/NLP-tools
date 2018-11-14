@@ -77,6 +77,8 @@ HTTP接口
 
 （在Modeltest.ipynb中列举了一些例子）
 
+最近一直在看Google神奇BERT，后续会添加BERT的序列标注训练模块进来，让模型在不同领域进行迁移。
+
 参考
 --
 
