@@ -7,9 +7,8 @@ from tensorflow.contrib import crf
 import cws.model as modelDef
 from cws.data import Data
 
-
-tf.app.flags.DEFINE_string('dict_path', '.data/your_dict.pkl', 'dict path')
-tf.app.flags.DEFINE_string('train_data', '.data/your_train_data.pkl', 'train data path')
+tf.app.flags.DEFINE_string('dict_path', 'D:/workspace/NLP-tools/data/your_dict.pkl', 'dict path')
+tf.app.flags.DEFINE_string('train_data', 'D:/workspace/NLP-tools/data/your_train_data.pkl', 'train data path')
 tf.app.flags.DEFINE_string('ckpt_path', 'checkpoint/cws.finetune.ckpt/', 'checkpoint path')
 tf.app.flags.DEFINE_integer('embed_size', 256, 'embedding size')
 tf.app.flags.DEFINE_integer('hidden_size', 512, 'hidden layer node number')
@@ -116,14 +115,13 @@ class BiLSTMTrain(object):
         return accuracy
 
 def main(_):
-    dictData = Data(path=FLAGS.dict_path)
-    trainData = Data.TrainData(path=FLAGS.train_data)
+    Data_ = Data(dict_path=FLAGS.dict_path, train_data=FLAGS.train_data)
     print('Corpus loading completed:',FLAGS.train_data)
-    data_train, data_valid, data_test = trainData.builderTrainData() 
+    data_train, data_valid, data_test = Data_.builderTrainData() 
     print('The training set, verification set, and test set split are completed!')
-    model = modelDef.BiLSTMModel(max_len=dictData.max_len, 
-                                 vocab_size=dictData.word2id.__len__()+1, 
-                                 class_num= dictData.tag2id.__len__(), 
+    model = modelDef.BiLSTMModel(max_len=Data_.max_len, 
+                                 vocab_size=Data_.word2id.__len__()+1, 
+                                 class_num= Data_.tag2id.__len__(), 
                                  model_save_path=FLAGS.save_path, 
                                  embed_size=FLAGS.embed_size,  
                                  hs=FLAGS.hidden_size)

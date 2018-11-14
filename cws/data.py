@@ -6,20 +6,17 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 class Data(object):
-    def __init__(self, path=None):
-        self.max_len = 200
-        if os.path.isfile(path):
-            with open(path, 'rb') as inp:
-                self.word2id = pickle.load(inp)
-                self.id2word = pickle.load(inp)
-                self.tag2id = pickle.load(inp)
-                self.id2tag = pickle.load(inp)
+    def __init__(self, dict_path=None, train_data=None):
+        self.max_len = 200 
+        with open(dict_path, 'rb') as inp:
+            self.word2id = pickle.load(inp)
+            self.id2word = pickle.load(inp)
+            self.tag2id = pickle.load(inp)
+            self.id2tag = pickle.load(inp)
 
-    def TrainData(self, path=None):
-        if os.path.isfile(path):
-            with open(path, 'rb') as inp:
-                self.X = pickle.load(inp)
-                self.Y = pickle.load(inp)
+        with open(train_data, 'rb') as inp:
+            self.X = pickle.load(inp)
+            self.Y = pickle.load(inp)
 
     def builderTrainData(self):
         X_train, X_test, y_train, y_test = train_test_split(self.X, self.Y, test_size=0.2, random_state=42)
