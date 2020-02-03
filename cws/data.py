@@ -5,9 +5,10 @@ import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
+
 class Data(object):
     def __init__(self, dict_path=None, train_data=None):
-        self.max_len = 200 
+        self.max_len = 200
         with open(dict_path, 'rb') as inp:
             self.word2id = pickle.load(inp)
             self.id2word = pickle.load(inp)
@@ -32,6 +33,7 @@ class Data(object):
         print('Finished creating the data generator.')
 
         return data_train, data_valid, data_test
+
 
 class BatchGenerator(object):
 
