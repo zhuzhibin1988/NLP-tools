@@ -2,7 +2,7 @@
 import time
 import numpy as np
 import tensorflow as tf
-from tensorflow_core.contrib import crf
+from tensorflow.contrib import crf
 
 import cws.model as modelDef
 from cws.data import Data
@@ -16,7 +16,7 @@ tf.app.flags.DEFINE_string('train_data', os.path.join(root_dir, "data", "your_tr
 tf.app.flags.DEFINE_string('ckpt_path', os.path.join(root_dir, "checkpoint", "cws.finetune.ckpt"), 'checkpoint path')
 tf.app.flags.DEFINE_string('save_path', os.path.join(root_dir, "checkpoint", "cws.ckpt"), 'new model save path')
 tf.app.flags.DEFINE_integer('embed_size', 256, 'embedding size')
-tf.app.flags.DEFINE_integer('hidden_size', 512, 'hidden layer node number')
+tf.app.flags.DEFINE_integer('hidden_size', 256, 'hidden layer node number')
 tf.app.flags.DEFINE_integer('batch_size', 128, 'batch size')
 tf.app.flags.DEFINE_integer('epoch', 9, 'training epoch')
 tf.app.flags.DEFINE_float('lr', 0.001, 'learning rate')

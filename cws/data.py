@@ -11,6 +11,7 @@ class Data(object):
         self.max_len = 200
         with open(dict_path, 'rb') as inp:
             self.word2id = pickle.load(inp)
+            self.word2id["<new>"] = -1
             self.id2word = pickle.load(inp)
             self.tag2id = pickle.load(inp)
             self.id2tag = pickle.load(inp)

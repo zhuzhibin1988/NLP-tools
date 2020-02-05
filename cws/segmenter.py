@@ -4,18 +4,19 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import crf
 
+from example.sentence import TagSurfix
 from .model import BiLSTMModel
 from .data import Data
 
 
 class BiLSTMSegmenter(object):
     def __init__(self, data_path=None, model_path=None):
-        self.data = Data(path=data_path)
+        self.data = Data(dict_path=data_path + "/your_dict.pkl", train_data=data_path + "/your_train_data.pkl")
         self.g1 = tf.Graph()
         self.sess1 = tf.Session(graph=self.g1)
         with self.sess1.as_default():
             with self.g1.as_default():
-                self.model = BiLSTMModel(vocab_size=self.data.word2id.__len__()+1, class_num=self.data.tag2id.__len__())
+                self.model = BiLSTMModel(vocab_size=self.data.word2id.__len__() + 1, class_num=self.data.tag2id.__len__(), hs=256)
                 checkpoint = tf.train.latest_checkpoint(model_path)
                 tf.train.Saver().restore(self.sess1, checkpoint)
 
@@ -29,19 +30,22 @@ class BiLSTMSegmenter(object):
             elif (inside_code >= 65281 and inside_code <= 65374):  # Full-width characters (except spaces)
                 inside_code -= 65248  # are transformed according to relationships
             rstring += chr(inside_code)
-        return rstring           
-    
-    # Transfor word to id
+        return rstring
+
+        # Transfor word to id
+
     def text2ids(self, text):
         words = list(text)
+
         # new word
         def f(w):
             if w in self.data.word2id:
                 return self.data.word2id[w]
             else:
                 return self.data.word2id['<new>']
+
         ids = [f(w) for w in words]
-        
+
         if len(ids) >= self.data.max_len:
             # print(u'输入句长超过%d，无法完成处理！' % self.data.max_len)
             ids = ids[:self.data.max_len]
@@ -60,52 +64,54 @@ class BiLSTMSegmenter(object):
             feed_dict = {self.model.X_inputs: X_batch,
                          self.model.lr: 1.0,
                          self.model.batch_size: 1,
-                        self.model.keep_prob: 1.0}
+                         self.model.keep_prob: 1.0}
             test_score, test_length, transition_params = sess.run(fetches, feed_dict)
             tags, _ = crf.viterbi_decode(test_score[0][:test_length[0]], transition_params)
-            tags = [self.data.id2tag[t] for t in tags]           
+            tags = [self.data.id2tag[t] for t in tags]
             return tags
         else:
             return []
-    
+
     # Cut line by predefined token
     def cut_word(self, sentence):
         not_cuts = re.compile(u'[。？.！\?!]')
         result = []
-        start = 0    
+        start = 0
         sentence = self.format_standardization(sentence)
         for seg_sign in not_cuts.finditer(sentence):
             result.extend(self.simple_cut(sentence[start:seg_sign.end()], self.sess1))
             start = seg_sign.end()
         result.extend(self.simple_cut(sentence[start:], self.sess1))
         return result
-    
+
     # Output format transfor
     def output(self, text, labels):
         text += 'x'
-        labels.append('O_X')
+        labels.append('S_X')
         rss = text[0]
         flag = labels[0].split('_')
-        result = ''
+        result = ""
         for i in range(len(labels))[1:]:
             token = labels[i].split('_')
-            if token[0] == 'O':
-                result = result + rss + '/' + flag[1] + ' '
-                flag = token
+            if token[-1] == TagSurfix.S.value:
                 rss = text[i]
-            if token[0] == 'B':
-                result = result + rss + '/' + flag[1] + ' '
-                flag = token
+                result = result + '/' + rss
+                rss = ""
+            if token[-1] == TagSurfix.B.value:
                 rss = text[i]
-            if token[0] == 'I':
+            if token[-1] == TagSurfix.M.value:
                 rss += text[i]
+            if token[-1] == TagSurfix.E.value:
+                rss += text[i]
+                result = result + '/' + rss
+                rss = ""
         return result
 
     def predict(self, text):
         with self.sess1.as_default():
             with self.sess1.graph.as_default():
                 cws_result = self.cut_word(text)
-                # print('--label--:', cws_result)
+                print('--label--:', cws_result)
                 rss = self.output(text, cws_result)
                 # print('--result--:', rss)
                 return rss

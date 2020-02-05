@@ -43,7 +43,7 @@ class BiLSTMModel(object):
 
         (output_fw, output_bw), _ = tf.nn.bidirectional_dynamic_rnn(self.lstm_cell(), self.lstm_cell(), self.inputs,
                                                                     sequence_length=self.length, dtype=tf.float32)
-        
+
         output = tf.concat([output_fw, output_bw], axis=-1)
         output = tf.reshape(output, [-1, self.hidden_size * 2])
         return output
@@ -52,20 +52,20 @@ class BiLSTMModel(object):
         with tf.variable_scope('Inputs'):
             self.X_inputs = tf.placeholder(tf.int32, [None, self.timestep_size], name='X_input')
             self.y_inputs = tf.placeholder(tf.int32, [None, self.timestep_size], name='y_input')
-        
+
         bilstm_output = self.bi_lstm(self.X_inputs)
-        
-        print('The shape of BiLstm Layer output:',bilstm_output.shape)
+
+        print('The shape of BiLstm Layer output:', bilstm_output.shape)
 
         with tf.variable_scope('outputs'):
             softmax_w = self.weight_variable([self.hidden_size * 2, self.class_num])
             softmax_b = self.bias_variable([self.class_num])
             self.y_pred = tf.matmul(bilstm_output,
                                     softmax_w) + softmax_b  # there is no softmax, reduce the amount of calculation.
-            
+
             self.scores = tf.reshape(self.y_pred, [-1, self.timestep_size,
                                                    self.class_num])  # [batchsize, timesteps, num_class]
-            print('The shape of Output Layer:',self.scores.shape)
+            print('The shape of Output Layer:', self.scores.shape)
             log_likelihood, self.transition_params = crf.crf_log_likelihood(self.scores, self.y_inputs, self.length)
             self.loss = tf.reduce_mean(-log_likelihood)
 
